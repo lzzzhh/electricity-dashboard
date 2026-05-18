@@ -1,0 +1,56 @@
+# ============================================
+# 字段映射配置 — 队友改 JSON 只改这个文件
+# ============================================
+
+mapping:
+  timestamp:
+    - timestamp
+    - time
+    - datetime
+    - interval
+    - trading_interval
+    - event_time
+
+  facility_id:
+    - facility_id
+    - facility_code
+    - duid
+    - station_id
+    - unit_code
+
+  facility_name:
+    - facility_name
+    - station_name
+    - name
+
+  network_region:
+    - network_region
+    - region
+    - nem_region
+
+  fuel_tech:
+    - fuel_tech
+    - fuel_technology
+    - fuel_type
+    - technology
+    - fuel_source
+
+  power_mw:
+    - power_mw
+    - power
+    - generation
+    - generation_mw
+    - output_mw
+    - value
+
+  emissions_tco2e:
+    - emissions_tco2e
+    - emissions
+    - co2
+    - co2_emissions
+    - emissions_tonnes
+
+# 单位转换（如果队友发的不是 MW / tCO2e）
+unit_conversion:
+  power_kw_to_mw: 0.001
+  emissions_kg_to_t: 0.001

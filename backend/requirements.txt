@@ -1,0 +1,26 @@
+# Electricity Dashboard - MQTT Subscriber + Real-time Visualization
+# COMP5339 Assignment 2
+
+# FastAPI
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+pydantic==2.9.0
+pydantic-settings==2.5.0
+
+# MQTT
+paho-mqtt==2.1.0
+
+# Database
+sqlalchemy==2.0.35
+
+# Config
+pyyaml==6.0.2
+python-dotenv==1.0.1
+
+# Streamlit Dashboard
+streamlit==1.39.0
+streamlit-autorefresh==1.0.1
+streamlit-folium==0.22.0
+folium==0.17.0
+plotly==5.24.0
+pandas==2.2.0
