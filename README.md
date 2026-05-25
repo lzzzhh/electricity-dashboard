@@ -83,7 +83,6 @@ One command launches the MQTT broker, FastAPI backend, and React frontend. The d
 
 ```
 electricity-dashboard/
-├── COMP5339_Assignment2.ipynb   # Notebook: Tasks 1, 2, 3, 6
 ├── start.sh                     # One-command launcher
 ├── requirements.txt             # Python dependencies
 ├── .env.example                 # Environment template
@@ -92,9 +91,6 @@ electricity-dashboard/
 │   ├── electricity.db           # SQLite — all live and historical data
 │   ├── assignment_1.duckdb      # A1 DuckDB (state-year + projects)
 │   └── assignment_1.duckdb.wal
-├── assignment1/                 # A1 data cleaning and analysis notebooks
-│   ├── data_cleaning_integration_augmentation.ipynb
-│   └── 3 Analysis+Visualisation.ipynb
 ├── backend/
 │   ├── main.py                  # FastAPI entry point, lifespan
 │   ├── api.py                   # REST endpoints (NEM + A1)
@@ -103,15 +99,12 @@ electricity-dashboard/
 │   ├── adapter.py               # JSON field mapping adapter
 │   ├── migrate_a1.py            # DuckDB → SQLite migration
 │   └── config.py                # Settings (.env + YAML)
-├── frontend/                    # React + Vite + Leaflet + Recharts
-│   └── src/
-│       ├── App.tsx              # Root layout
-│       ├── components/          # MapView, TopBar, BottomPanel, etc.
-│       ├── hooks/useApi.ts      # API hooks (NEM + A1)
-│       └── types/index.ts       # TypeScript interfaces (NEM + A1)
-└── report/
-    ├── template.tex
-    └── template.tex.zip
+└── frontend/                    # React + Vite + Leaflet + Recharts
+    └── src/
+        ├── App.tsx              # Root layout
+        ├── components/          # MapView, TopBar, BottomPanel, etc.
+        ├── hooks/useApi.ts      # API hooks (NEM + A1)
+        └── types/index.ts       # TypeScript interfaces (NEM + A1)
 ```
 
 ## Data Pipeline
