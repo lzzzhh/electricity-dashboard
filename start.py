@@ -25,7 +25,17 @@ def main():
 
     # 3. Python dependencies
     print("\n[2/5] Installing Python dependencies ...")
-    run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "-q"])
+    # Try normal pip first, fall back to --break-system-packages for Homebrew Python
+    result = subprocess.run(
+        [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "-q"],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0 and "externally-managed" in result.stderr:
+        print("   Retrying with --break-system-packages (Homebrew Python) ...")
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "-q", "--break-system-packages"],
+            capture_output=True, text=True
+        )
 
     # 4. React dependencies
     print("\n[3/5] Installing React dependencies ...")
