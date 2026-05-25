@@ -18,7 +18,6 @@ Assignment 1 DuckDB  ──→  migrate_a1.py  ──→  SQLite (same)  ──�
 | MQTT Broker | Mosquitto | 1883 |
 | Backend API | FastAPI + SQLAlchemy + DuckDB | 8000 |
 | React Dashboard | Vite + Leaflet + Recharts + Tailwind | 5173 |
-| Streamlit Dashboard | Folium + Plotly | 8501 |
 
 ## Data
 
@@ -77,8 +76,7 @@ One command launches the MQTT broker, FastAPI backend, and React frontend. The d
 
 | Dashboard | URL |
 |---|---|
-| **React** (primary) | http://localhost:5173 |
-| Streamlit (alternative) | http://localhost:8501 |
+| React | http://localhost:5173 |
 | API docs | http://localhost:8000/docs |
 
 ## Project Structure
@@ -86,7 +84,6 @@ One command launches the MQTT broker, FastAPI backend, and React frontend. The d
 ```
 electricity-dashboard/
 ├── COMP5339_Assignment2.ipynb   # Notebook: Tasks 1, 2, 3, 6
-├── dashboard.py                 # Streamlit dashboard (Task 5 alt)
 ├── start.sh                     # One-command launcher
 ├── requirements.txt             # Python dependencies
 ├── .env.example                 # Environment template
