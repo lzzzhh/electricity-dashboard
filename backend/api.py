@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from .database import get_db, Facility, Measurement, MarketData
+from .database import get_db, Facility, Measurement, MarketData, IntegratedEnergyStateYear, RenewableProject
 
 router = APIRouter()
 
@@ -55,6 +55,105 @@ def get_latest(db: Session = Depends(get_db)):
         }
         for m in rows
     ]
+
+
+# ══════════════════════════════════════════
+# Assignment 1 历史数据端点
+# ══════════════════════════════════════════
+
+@router.get("/api/assignment1/state_year")
+def get_assignment1_state_year(
+    state: Optional[str] = None,
+    year: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
+    """返回 Assignment 1 州/年集成数据"""
+    query = db.query(IntegratedEnergyStateYear)
+    if state:
+        query = query.filter(IntegratedEnergyStateYear.state == state)
+    if year:
+        query = query.filter(IntegratedEnergyStateYear.year == year)
+    rows = query.order_by(IntegratedEnergyStateYear.state, IntegratedEnergyStateYear.year).all()
+    return [
+        {
+            "state": r.state,
+            "year": r.year,
+            "total_generation_mwh": r.total_generation_mwh,
+            "total_emissions_tco2e": r.total_emissions_tco2e,
+            "total_businesses": r.total_businesses,
+            "small_businesses": r.small_businesses,
+            "renewable_project_count": r.renewable_project_count,
+            "total_renewable_capacity_mw": r.total_renewable_capacity_mw,
+        }
+        for r in rows
+    ]
+
+
+@router.get("/api/assignment1/renewable_projects")
+def get_assignment1_renewable_projects(
+    state: Optional[str] = None,
+    status: Optional[str] = None,
+    geocoded_only: bool = False,
+    db: Session = Depends(get_db),
+):
+    """返回 Assignment 1 可再生能源项目（含地理编码）"""
+    query = db.query(RenewableProject)
+    if state:
+        query = query.filter(RenewableProject.state == state)
+    if status:
+        query = query.filter(RenewableProject.status == status)
+    if geocoded_only:
+        query = query.filter(RenewableProject.latitude.isnot(None))
+    rows = query.order_by(RenewableProject.state, RenewableProject.project_name).all()
+    return [
+        {
+            "project_name": r.project_name,
+            "state": r.state,
+            "postcode": r.postcode,
+            "capacity_mw": r.capacity_mw,
+            "fuel_source": r.fuel_source,
+            "project_date": r.project_date,
+            "status": r.status,
+            "latitude": r.latitude,
+            "longitude": r.longitude,
+            "display_name": r.display_name,
+            "match_quality": r.match_quality,
+        }
+        for r in rows
+    ]
+
+
+@router.get("/api/assignment1/summary")
+def get_assignment1_summary(db: Session = Depends(get_db)):
+    """返回 Assignment 1 汇总统计"""
+    total_projects = db.query(RenewableProject).count()
+    geocoded_projects = db.query(RenewableProject).filter(RenewableProject.latitude.isnot(None)).count()
+    state_rows = db.query(IntegratedEnergyStateYear).count()
+    years = sorted(set(r[0] for r in db.query(IntegratedEnergyStateYear.year).distinct().all()))
+    states = sorted(set(r[0] for r in db.query(IntegratedEnergyStateYear.state).distinct().all()))
+
+    emissions_by_state = {}
+    for s in states:
+        avg = db.query(func.avg(IntegratedEnergyStateYear.total_emissions_tco2e)).filter(
+            IntegratedEnergyStateYear.state == s
+        ).scalar()
+        emissions_by_state[s] = round(float(avg), 2) if avg else None
+
+    projects_by_status = {}
+    for s in ["accredited", "committed", "probable"]:
+        cnt = db.query(RenewableProject).filter(RenewableProject.status == s).count()
+        projects_by_status[s] = cnt
+
+    return {
+        "state_year_rows": state_rows,
+        "states": states,
+        "years": years,
+        "total_renewable_projects": total_projects,
+        "geocoded_renewable_projects": geocoded_projects,
+        "match_rate": round(geocoded_projects / total_projects, 3) if total_projects else 0,
+        "projects_by_status": projects_by_status,
+        "avg_emissions_by_state": emissions_by_state,
+    }
 
 
 @router.get("/api/facilities/{facility_id}/timeseries")

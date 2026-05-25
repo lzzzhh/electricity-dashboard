@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import type { Metric } from "./types";
-import { useFacilities, useLatest, useStats, useTimeseries, useSummary, useMarketLatest, useMarketTimeseries, useMarketRegions } from "./hooks/useApi";
+import { useFacilities, useLatest, useStats, useTimeseries, useSummary, useMarketLatest, useMarketTimeseries, useMarketRegions, useA1Summary, useA1StateYear, useA1Renewable } from "./hooks/useApi";
 import NavBar from "./components/NavBar";
 import FilterPanel from "./components/FilterPanel";
 import TopBar from "./components/TopBar";
@@ -42,6 +42,10 @@ export default function App() {
   const marketRegions = useMarketRegions();
   const [marketFocus, setMarketFocus] = useState<string>("NSW1");
   const marketTimeseries = useMarketTimeseries(marketFocus);
+
+  const a1Summary = useA1Summary();
+  const a1StateYear = useA1StateYear();
+  const a1Renewable = useA1Renewable(true);
 
   const selectedFacility = facilities.find(f => f.facility_id === selectedId) ?? null;
   const selectedReading = latest.find(d => d.facility_id === selectedId) ?? null;
@@ -101,6 +105,7 @@ export default function App() {
             latest={filteredLatest}
             selectedId={selectedId}
             onSelect={setSelectedId}
+            a1Renewable={a1Renewable}
           />
 
           {/* Floating detail panel overlay */}
@@ -125,6 +130,9 @@ export default function App() {
             marketTimeseries={marketTimeseries}
             marketLatest={marketLatest}
             metric={metric}
+            a1Summary={a1Summary}
+            a1StateYear={a1StateYear}
+            a1Renewable={a1Renewable}
           />
         </div>
       </div>

@@ -65,6 +65,48 @@ class MarketData(Base):
     )
 
 
+class IntegratedEnergyStateYear(Base):
+    """Assignment 1 集成数据 — 州/年级别的能源+经济汇总"""
+    __tablename__ = "integrated_energy_state_year"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    state = Column(String(4), nullable=False)
+    year = Column(Integer, nullable=False)
+    total_generation_mwh = Column(Float)
+    total_emissions_tco2e = Column(Float)
+    total_businesses = Column(Float)  # DuckDB BIGINT → SQLite REAL (NaN-safe)
+    small_businesses = Column(Float)
+    renewable_project_count = Column(Float)
+    total_renewable_capacity_mw = Column(Float)
+
+    __table_args__ = (
+        Index("idx_integrated_state_year", "state", "year", unique=True),
+    )
+
+
+class RenewableProject(Base):
+    """Assignment 1 可再生能源项目（含地理编码）"""
+    __tablename__ = "renewable_projects"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project_name = Column(String)
+    state = Column(String(4))
+    postcode = Column(Float)
+    capacity_mw = Column(Float)
+    fuel_source = Column(String)
+    project_date = Column(String)
+    status = Column(String)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    display_name = Column(String)
+    match_quality = Column(String)
+
+    __table_args__ = (
+        Index("idx_renewable_state", "state"),
+        Index("idx_renewable_status", "status"),
+    )
+
+
 def init_db():
     """创建所有表"""
     Base.metadata.create_all(bind=engine)

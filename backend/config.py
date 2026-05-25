@@ -21,6 +21,7 @@ class Settings:
 
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./data/electricity.db")
+    DUCKDB_ASSIGNMENT1_PATH: Path = BASE_DIR / "assignment1" / "assignment_1.duckdb"
 
     # API
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { MapContainer, TileLayer, CircleMarker, Popup, Tooltip } from "react-leaflet";
-import type { Facility, LatestReading } from "../types";
+import type { Facility, LatestReading, A1RenewableProject } from "../types";
 import { FUEL_LABELS, carbonColor, ciLabel } from "../types";
 
 import "leaflet/dist/leaflet.css";
@@ -10,6 +10,7 @@ interface Props {
   latest: LatestReading[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  a1Renewable: A1RenewableProject[];
 }
 
 /**
@@ -20,7 +21,7 @@ function markerRadius(powerMw: number): number {
   return Math.max(3, Math.min(14, Math.sqrt(powerMw) * 0.4));
 }
 
-export default function MapView({ facilities, latest, selectedId, onSelect }: Props) {
+export default function MapView({ facilities, latest, selectedId, onSelect, a1Renewable }: Props) {
   const facMap = useMemo(
     () => new Map(facilities.map((f) => [f.facility_id, f])),
     [facilities],
@@ -45,9 +46,6 @@ export default function MapView({ facilities, latest, selectedId, onSelect }: Pr
     // Glow halo — same color, very low opacity, larger than the dot
     const glowR = r + (isSelected ? 10 : isHovered ? 7 : 5);
     const glowFill = isSelected ? 0.22 : isHovered ? 0.14 : 0.07;
-
-    // White border weight
-    const strokeW = isSelected ? 2.5 : isHovered ? 2 : 1.5;
 
     const kid = d.facility_id;
     const layers: React.ReactNode[] = [];
@@ -86,17 +84,17 @@ export default function MapView({ facilities, latest, selectedId, onSelect }: Pr
       );
     }
 
-    // Layer 3: main dot — solid fill, crisp white border
+    // Layer 3: main dot — solid fill, matching border (no white ring)
     layers.push(
       <CircleMarker
         key={`${kid}-main`}
         center={[meta.latitude, meta.longitude]}
         radius={r}
         pathOptions={{
-          color: "white",
+          color: ciC,
           fillColor: ciC,
           fillOpacity: 1,
-          weight: strokeW,
+          weight: isSelected ? 2 : isHovered ? 1.5 : 0.5,
         }}
         eventHandlers={{
           click: () => onSelect(d.facility_id),
@@ -159,6 +157,44 @@ export default function MapView({ facilities, latest, selectedId, onSelect }: Pr
         />
 
         {markerLayers}
+
+        {/* A1 Renewable project markers — blue to distinguish from CI-coloured NEM markers */}
+        {a1Renewable.filter(p => p.latitude && p.longitude).map((p) => (
+          <CircleMarker
+            key={`a1-${p.project_name}`}
+            center={[p.latitude!, p.longitude!]}
+            radius={Math.max(2.5, Math.min(6, (p.capacity_mw ?? 1) / 60))}
+            pathOptions={{
+              color: "#0d47a1",
+              fillColor: "#42a5f5",
+              fillOpacity: 0.5,
+              weight: 1,
+            }}
+          >
+            <Tooltip direction="top" offset={[0, -6]}>
+              <b>{p.project_name}</b>
+              <br />
+              {p.capacity_mw?.toFixed(1)} MW · {p.fuel_source} · {p.status}
+            </Tooltip>
+            <Popup maxWidth={200}>
+              <div className="text-xs">
+                <div className="font-semibold text-gray-900 text-sm mb-0.5">{p.project_name}</div>
+                <div className="text-gray-400 mb-1">{p.fuel_source} · {p.state}</div>
+                <div className="flex gap-2 mb-1">
+                  <div className="flex-1 text-center bg-gray-100 rounded py-1 px-1.5">
+                    <div className="font-semibold text-sm text-green-700">{p.capacity_mw?.toFixed(1)}</div>
+                    <div className="text-[9px] text-gray-400">MW</div>
+                  </div>
+                  <div className="flex-1 text-center bg-gray-100 rounded py-1 px-1.5">
+                    <div className="font-semibold text-sm capitalize text-gray-700">{p.status}</div>
+                    <div className="text-[9px] text-gray-400">Status</div>
+                  </div>
+                </div>
+                <div className="text-[10px] text-gray-400">{p.project_date} · match: {p.match_quality}</div>
+              </div>
+            </Popup>
+          </CircleMarker>
+        ))}
       </MapContainer>
 
       {/* Carbon intensity legend */}

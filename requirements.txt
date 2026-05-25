@@ -12,6 +12,7 @@ paho-mqtt==2.1.0
 
 # Database
 sqlalchemy==2.0.35
+duckdb==1.2.1
 
 # Config
 pyyaml==6.0.2

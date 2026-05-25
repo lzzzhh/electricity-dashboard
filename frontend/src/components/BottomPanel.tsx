@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import type { LatestReading, Facility, SummaryItem, Metric, MarketReading } from "../types";
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, ScatterChart, Scatter } from "recharts";
+import type { LatestReading, Facility, SummaryItem, Metric, MarketReading, A1StateYear, A1RenewableProject, A1Summary } from "../types";
 import { FUEL_LABELS, FUEL_COLORS, REGION_COLORS } from "../types";
 
 interface Props {
@@ -11,11 +11,14 @@ interface Props {
   marketTimeseries: MarketReading[];
   marketLatest: MarketReading[];
   metric: Metric;
+  a1Summary: A1Summary | null;
+  a1StateYear: A1StateYear[];
+  a1Renewable: A1RenewableProject[];
 }
 
-type TabKey = "region" | "fuel" | "prices" | "demand" | "table";
+type TabKey = "region" | "fuel" | "prices" | "demand" | "table" | "a1";
 
-export default function BottomPanel({ latest, facilities, regionSummary, fuelSummary, marketTimeseries, marketLatest, metric }: Props) {
+export default function BottomPanel({ latest, facilities, regionSummary, fuelSummary, marketTimeseries, marketLatest, metric, a1Summary, a1StateYear, a1Renewable }: Props) {
   const isPower = metric === "power_mw";
   const facMap = useMemo(() => new Map(facilities.map(f => [f.facility_id, f])), [facilities]);
 
@@ -56,6 +59,7 @@ export default function BottomPanel({ latest, facilities, regionSummary, fuelSum
     { key: "prices", label: "Market Prices" },
     { key: "demand", label: "Demand" },
     { key: "table", label: "Latest Data" },
+    { key: "a1", label: "Historical (A1)" },
   ];
 
   // Prepare price chart data
@@ -209,7 +213,115 @@ export default function BottomPanel({ latest, facilities, regionSummary, fuelSum
                   </tr>
                 ))}
               </tbody>
-            </table>
+                </table>
+          </div>
+        )}
+        {tab === "a1" && (
+          <div className="h-full flex flex-col">
+            {!a1Summary ? (
+              <div className="text-[11px] text-gray-400 p-4 text-center">Assignment 1 data not loaded. Run migrate_a1 first.</div>
+            ) : (
+              <div className="flex-1 flex gap-3 overflow-auto p-1">
+                {/* Left: charts */}
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="flex-1">
+                    <div className="text-[10px] text-gray-400 mb-1">Total Emissions by State 2020–2023 (tCO₂e)</div>
+                    <ResponsiveContainer width="100%" height="85%">
+                      <BarChart data={(() => {
+                        const arr: { state: string; value: number }[] = [];
+                        for (const r of a1StateYear) {
+                          const e = arr.find(x => x.state === r.state);
+                          if (e) e.value += r.total_emissions_tco2e ?? 0;
+                          else arr.push({ state: r.state, value: r.total_emissions_tco2e ?? 0 });
+                        }
+                        return arr.sort((a, b) => b.value - a.value);
+                      })()} margin={{ top: 3, right: 5, bottom: 3, left: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e8e5e0" />
+                        <XAxis dataKey="state" tick={{ fontSize: 9, fill: "#888" }} />
+                        <YAxis tick={{ fontSize: 9, fill: "#888" }} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: number) => `${(v / 1e6).toFixed(1)}M t`} />
+                        <Bar dataKey="value" radius={[2, 2, 0, 0]}>
+                          {(() => {
+                            const arr: { state: string; value: number }[] = [];
+                            for (const r of a1StateYear) {
+                              const e = arr.find(x => x.state === r.state);
+                              if (e) e.value += r.total_emissions_tco2e ?? 0;
+                              else arr.push({ state: r.state, value: r.total_emissions_tco2e ?? 0 });
+                            }
+                            return arr.sort((a, b) => b.value - a.value).map(s => (
+                              <Cell key={s.state} fill={REGION_COLORS[s.state] || "#888"} />
+                            ));
+                          })()}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-[10px] text-gray-400 mb-1">Emission Intensity (tCO₂e / GWh)</div>
+                    <ResponsiveContainer width="100%" height="85%">
+                      <BarChart data={(() => {
+                        const map = new Map<string, { gen: number; em: number }>();
+                        for (const r of a1StateYear) {
+                          const e = map.get(r.state) || { gen: 0, em: 0 };
+                          e.gen += r.total_generation_mwh ?? 0;
+                          e.em += r.total_emissions_tco2e ?? 0;
+                          map.set(r.state, e);
+                        }
+                        return Array.from(map.entries()).map(([state, v]) => ({
+                          state, intensity: v.gen ? v.em / (v.gen / 1000) : 0,
+                        })).sort((a, b) => b.intensity - a.intensity);
+                      })()} margin={{ top: 3, right: 5, bottom: 3, left: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e8e5e0" />
+                        <XAxis dataKey="state" tick={{ fontSize: 9, fill: "#888" }} />
+                        <YAxis tick={{ fontSize: 9, fill: "#888" }} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: number) => v.toFixed(0)} />
+                        <Bar dataKey="intensity" radius={[2, 2, 0, 0]}>
+                          {(() => {
+                            const map = new Map<string, { gen: number; em: number }>();
+                            for (const r of a1StateYear) {
+                              const e = map.get(r.state) || { gen: 0, em: 0 };
+                              e.gen += r.total_generation_mwh ?? 0;
+                              e.em += r.total_emissions_tco2e ?? 0;
+                              map.set(r.state, e);
+                            }
+                            return Array.from(map.entries()).sort((a, b) => {
+                              const ia = a[1].gen ? a[1].em / (a[1].gen / 1000) : 0;
+                              const ib = b[1].gen ? b[1].em / (b[1].gen / 1000) : 0;
+                              return ib - ia;
+                            }).map(([state]) => (
+                              <Cell key={state} fill={REGION_COLORS[state] || "#888"} />
+                            ));
+                          })()}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+                {/* Right: stats cards */}
+                <div className="w-[180px] flex flex-col gap-2 text-[10px]">
+                  <div className="glass-card rounded-lg p-2">
+                    <div className="text-gray-400 mb-1">A1 Summary</div>
+                    <div className="flex justify-between"><span>State-Years</span><span className="text-gray-700">{a1Summary.state_year_rows}</span></div>
+                    <div className="flex justify-between"><span>Years</span><span className="text-gray-700">{a1Summary.years[0]}–{a1Summary.years[a1Summary.years.length-1]}</span></div>
+                    <div className="flex justify-between"><span>Renewable</span><span className="text-gray-700">{a1Summary.total_renewable_projects}</span></div>
+                    <div className="flex justify-between"><span>Geocoded</span><span className="text-gray-700">{a1Summary.geocoded_renewable_projects}</span></div>
+                    <div className="flex justify-between"><span>Match</span><span className="text-gray-700">{(a1Summary.match_rate * 100).toFixed(1)}%</span></div>
+                  </div>
+                  <div className="glass-card rounded-lg p-2 flex-1 overflow-auto">
+                    <div className="text-gray-400 mb-1">By Status</div>
+                    {Object.entries(a1Summary.projects_by_status).map(([k, v]) => (
+                      <div key={k} className="flex justify-between capitalize"><span className="text-gray-600">{k}</span><span className="text-gray-700">{v}</span></div>
+                    ))}
+                  </div>
+                  <div className="glass-card rounded-lg p-2 flex-1 overflow-auto">
+                    <div className="text-gray-400 mb-1">Avg Emissions</div>
+                    {Object.entries(a1Summary.avg_emissions_by_state).sort(([,a],[,b]) => (b ?? 0) - (a ?? 0)).map(([state, val]) => (
+                      <div key={state} className="flex justify-between"><span className="text-gray-600">{state}</span><span className="text-gray-700">{val != null ? `${(val/1e6).toFixed(1)}M` : "—"}</span></div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

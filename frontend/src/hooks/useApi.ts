@@ -8,6 +8,9 @@ import type {
   TimeseriesPoint,
   MarketReading,
   Metric,
+  A1StateYear,
+  A1RenewableProject,
+  A1Summary,
 } from "../types";
 
 const API = "";
@@ -138,5 +141,55 @@ export function useMarketRegions() {
     })();
     return () => { cancelled = true; };
   }, []);
+  return data;
+}
+
+// ── Assignment 1 hooks ──
+
+export function useA1Summary() {
+  const [data, setData] = useState<A1Summary | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get<A1Summary>(`${API}/api/assignment1/summary`, { timeout: 3000 });
+        if (!cancelled) setData(res.data);
+      } catch { if (!cancelled) setData(null); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+  return data;
+}
+
+export function useA1StateYear() {
+  const [data, setData] = useState<A1StateYear[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get<A1StateYear[]>(`${API}/api/assignment1/state_year`, { timeout: 3000 });
+        if (!cancelled) setData(res.data);
+      } catch { if (!cancelled) setData([]); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+  return data;
+}
+
+export function useA1Renewable(geocodedOnly = true) {
+  const [data, setData] = useState<A1RenewableProject[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get<A1RenewableProject[]>(`${API}/api/assignment1/renewable_projects`, {
+          params: { geocoded_only: geocodedOnly },
+          timeout: 3000,
+        });
+        if (!cancelled) setData(res.data);
+      } catch { if (!cancelled) setData([]); }
+    })();
+    return () => { cancelled = true; };
+  }, [geocodedOnly]);
   return data;
 }

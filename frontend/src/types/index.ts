@@ -130,3 +130,41 @@ export interface TimeseriesPoint {
   power_mw: number;
   emissions_tco2e: number;
 }
+
+// ── Assignment 1 types ──
+
+export interface A1StateYear {
+  state: string;
+  year: number;
+  total_generation_mwh: number | null;
+  total_emissions_tco2e: number | null;
+  total_businesses: number | null;
+  small_businesses: number | null;
+  renewable_project_count: number | null;
+  total_renewable_capacity_mw: number | null;
+}
+
+export interface A1RenewableProject {
+  project_name: string;
+  state: string;
+  postcode: number | null;
+  capacity_mw: number | null;
+  fuel_source: string;
+  project_date: string;
+  status: string;
+  latitude: number | null;
+  longitude: number | null;
+  display_name: string | null;
+  match_quality: string | null;
+}
+
+export interface A1Summary {
+  state_year_rows: number;
+  states: string[];
+  years: number[];
+  total_renewable_projects: number;
+  geocoded_renewable_projects: number;
+  match_rate: number;
+  projects_by_status: Record<string, number>;
+  avg_emissions_by_state: Record<string, number | null>;
+}

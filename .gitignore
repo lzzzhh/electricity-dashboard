@@ -32,3 +32,5 @@ Thumbs.db
 *.db
 *.db-journal
 *.db-wal
+*.duckdb
+*.duckdb.wal

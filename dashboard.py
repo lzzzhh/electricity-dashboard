@@ -255,6 +255,11 @@ stats = _get("/api/stats")
 market_latest = _get("/api/market/latest")
 market_regions = _get("/api/market/regions")
 
+# Assignment 1 historical data
+a1_summary = _get("/api/assignment1/summary")
+a1_state_year = _get("/api/assignment1/state_year")
+a1_renewable = _get("/api/assignment1/renewable_projects?geocoded_only=true")
+
 fac_lookup = {f["facility_id"]: f for f in facilities}
 latest_lookup = {d["facility_id"]: d for d in latest}
 all_regions = sorted(set(f.get("network_region", "") for f in facilities))
@@ -542,7 +547,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-t1, t2, t3, t4, t5 = st.tabs(["By Region", "By Technology", "Market Prices", "Demand", "Latest Data"])
+t1, t2, t3, t4, t5, t6 = st.tabs(["By Region", "By Technology", "Market Prices", "Demand", "Latest Data", "Historical (A1)"])
 
 metric_is_power = st.session_state.metric == "power_mw"
 
@@ -749,3 +754,175 @@ with t5:
                 "CI (gCO₂/kWh)": f"{ci_raw:.0f}",
             })
         st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+# ── Historical Tab (Assignment 1) ──
+with t6:
+    if not a1_summary or not a1_state_year:
+        st.caption("Assignment 1 data not available. Run `python -m backend.migrate_a1` first.")
+    else:
+        # ── Summary Stats ──
+        st.markdown("""<div style="font-size:0.65rem;color:#90909e;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Assignment 1 — Historical Energy & Economy Data</div>""", unsafe_allow_html=True)
+
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("State-Year Rows", a1_summary.get("state_year_rows", 0))
+        c2.metric("Years", "–".join(str(y) for y in a1_summary.get("years", [])))
+        c3.metric("Renewable Projects", a1_summary.get("total_renewable_projects", 0))
+        c4.metric("Geocoded Projects", a1_summary.get("geocoded_renewable_projects", 0))
+        c5.metric("Match Rate", f"{a1_summary.get('match_rate', 0):.1%}")
+
+        # ── Emissions by State ──
+        st.markdown("""<div style="font-size:0.65rem;color:#90909e;text-transform:uppercase;letter-spacing:1px;margin-top:10px;">Total Emissions by State</div>""", unsafe_allow_html=True)
+        if a1_state_year:
+            df_sy = pd.DataFrame(a1_state_year)
+            df_em = df_sy.groupby("state")["total_emissions_tco2e"].sum().sort_values(ascending=False)
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=df_em.index.tolist(),
+                y=df_em.values.tolist(),
+                marker_color=["#c62828", "#e65100", "#fdd835", "#2e7d32", "#1565c0", "#8e24aa", "#ff8f00", "#78909c"][:len(df_em)],
+            ))
+            fig.update_layout(
+                title="Total Emissions by State 2020-2023 (tCO₂e)",
+                paper_bgcolor="#f7f8fa", plot_bgcolor="#f7f8fa",
+                font=dict(color="#5a5a6e", size=10), showlegend=False,
+                margin=dict(l=10, r=10, t=30, b=10),
+                xaxis=dict(showgrid=False), yaxis=dict(showgrid=True, gridcolor="#e4e4ea"),
+                title_font=dict(color="#1a1a24", size=11),
+                height=280,
+            )
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+        # ── Renewable Capacity + Emissions (two columns) ──
+        col_a, col_b = st.columns(2)
+
+        with col_a:
+            st.markdown("""<div style="font-size:0.65rem;color:#90909e;text-transform:uppercase;letter-spacing:1px;">Renewable Capacity vs Emissions</div>""", unsafe_allow_html=True)
+            if a1_state_year:
+                df_sy = pd.DataFrame(a1_state_year)
+                df_plot = df_sy.dropna(subset=["total_renewable_capacity_mw", "total_emissions_tco2e"])
+                if not df_plot.empty:
+                    fig2 = go.Figure()
+                    fig2.add_trace(go.Scatter(
+                        x=df_plot["total_renewable_capacity_mw"],
+                        y=df_plot["total_emissions_tco2e"],
+                        mode="markers+text",
+                        text=df_plot["state"] + " " + df_plot["year"].astype(str),
+                        textposition="top center",
+                        textfont=dict(size=8, color="#5a5a6e"),
+                        marker=dict(size=8, color="#e65100", opacity=0.7),
+                    ))
+                    fig2.update_layout(
+                        paper_bgcolor="#f7f8fa", plot_bgcolor="#f7f8fa",
+                        font=dict(color="#5a5a6e", size=10), showlegend=False,
+                        margin=dict(l=10, r=10, t=10, b=10),
+                        xaxis=dict(showgrid=True, gridcolor="#e4e4ea", title="Renewable Capacity (MW)"),
+                        yaxis=dict(showgrid=True, gridcolor="#e4e4ea", title="Emissions (tCO₂e)"),
+                        height=280,
+                    )
+                    st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
+                else:
+                    st.caption("No renewable capacity data available")
+
+        with col_b:
+            st.markdown("""<div style="font-size:0.65rem;color:#90909e;text-transform:uppercase;letter-spacing:1px;">Emission Intensity (tCO₂e / GWh)</div>""", unsafe_allow_html=True)
+            if a1_state_year:
+                df_sy = pd.DataFrame(a1_state_year)
+                df_sy["intensity"] = df_sy["total_emissions_tco2e"] / (df_sy["total_generation_mwh"] / 1000)
+                df_int = df_sy.groupby("state")["intensity"].mean().sort_values(ascending=False)
+                fig3 = go.Figure()
+                fig3.add_trace(go.Bar(
+                    x=df_int.index.tolist(),
+                    y=df_int.values.tolist(),
+                    marker_color=["#c62828", "#e65100", "#fdd835", "#2e7d32", "#1565c0", "#8e24aa", "#ff8f00", "#78909c"][:len(df_int)],
+                ))
+                fig3.update_layout(
+                    paper_bgcolor="#f7f8fa", plot_bgcolor="#f7f8fa",
+                    font=dict(color="#5a5a6e", size=10), showlegend=False,
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    xaxis=dict(showgrid=False), yaxis=dict(showgrid=True, gridcolor="#e4e4ea"),
+                    height=280,
+                )
+                st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar": False})
+            else:
+                st.caption("No data available")
+
+        # ── Renewable Projects Map ──
+        st.markdown("""<div style="font-size:0.65rem;color:#90909e;text-transform:uppercase;letter-spacing:1px;margin-top:10px;">Renewable Projects (Assignment 1 — Geocoded)</div>""", unsafe_allow_html=True)
+        if a1_renewable:
+            df_rp = pd.DataFrame(a1_renewable)
+            fig_map = go.Figure()
+
+            state_colors = {"NSW": "#636efa", "QLD": "#EF553B", "VIC": "#ab63fa",
+                           "WA": "#00cc96", "SA": "#19d3f3", "ACT": "#FFA15A",
+                           "TAS": "#FF6692", "NT": "#B6E880"}
+
+            for st_name in sorted(df_rp["state"].unique()):
+                sdf = df_rp[df_rp["state"] == st_name]
+                fig_map.add_trace(go.Scattergeo(
+                    lon=sdf["longitude"],
+                    lat=sdf["latitude"],
+                    mode="markers",
+                    name=st_name,
+                    marker=dict(
+                        size=sdf["capacity_mw"].clip(lower=2).apply(lambda x: max(4, min(16, x / 30))),
+                        color=state_colors.get(st_name, "#888"),
+                        opacity=0.75,
+                        line=dict(width=0.5, color="white"),
+                    ),
+                    text=sdf.apply(
+                        lambda r: f"<b>{r['project_name']}</b><br>{r['capacity_mw']:.1f} MW • {r['fuel_source']} • {r['status']}",
+                        axis=1,
+                    ),
+                    hoverinfo="text",
+                ))
+
+            fig_map.update_geos(
+                scope="world",
+                showcountries=True, countrycolor="lightgray",
+                showcoastlines=True, coastlinecolor="gray",
+                showland=True, landcolor="rgb(245,245,245)",
+                showocean=True, oceancolor="rgb(230,240,255)",
+                lataxis_range=[-45, -10], lonaxis_range=[110, 155],
+                projection_type="mercator",
+            )
+            fig_map.update_layout(
+                title="Geocoded Renewable Projects",
+                paper_bgcolor="#f7f8fa",
+                font=dict(color="#5a5a6e", size=10),
+                margin=dict(l=10, r=10, t=30, b=10),
+                legend=dict(orientation="h", y=-0.1, font=dict(size=9)),
+                height=400,
+                title_font=dict(color="#1a1a24", size=11),
+            )
+            st.plotly_chart(fig_map, use_container_width=True, config={"displayModeBar": False})
+        else:
+            st.caption("No geocoded renewable project data available")
+
+        # ── State-Year Data Table ──
+        with st.expander("Integrated State-Year Data Table", expanded=False):
+            if a1_state_year:
+                df_table = pd.DataFrame(a1_state_year)
+                df_table = df_table.rename(columns={
+                    "state": "State", "year": "Year",
+                    "total_generation_mwh": "Gen (MWh)",
+                    "total_emissions_tco2e": "Emissions (tCO₂e)",
+                    "total_businesses": "Businesses",
+                    "small_businesses": "Small Biz",
+                    "renewable_project_count": "Renew Projects",
+                    "total_renewable_capacity_mw": "Renew Cap (MW)",
+                })
+                st.dataframe(df_table, use_container_width=True, hide_index=True)
+
+        # ── Renewable Projects Table ──
+        with st.expander("Renewable Projects Table (Geocoded)", expanded=False):
+            if a1_renewable:
+                df_rp2 = pd.DataFrame(a1_renewable)
+                df_rp2 = df_rp2.rename(columns={
+                    "project_name": "Project", "state": "State",
+                    "capacity_mw": "MW", "fuel_source": "Fuel",
+                    "status": "Status", "match_quality": "Match",
+                })
+                st.dataframe(
+                    df_rp2[["Project", "State", "MW", "Fuel", "Status", "Match"]],
+                    use_container_width=True, hide_index=True,
+                )
