@@ -5,7 +5,7 @@
 ## Architecture
 
 ```
-OpenElectricity API  ──→  CSV Cache  ──→  MQTT Broker  ──→  FastAPI  ──→  SQLite  ──→  React / Streamlit
+OpenElectricity API  ──→  CSV Cache  ──→  MQTT Broker  ──→  FastAPI  ──→  SQLite  ──→  React
   (Task 1 notebook)     (Task 2 nb)     (Task 3+6 nb)    (Task 4)     (Task 4)     (Task 5)
 
 Assignment 1 DuckDB  ──→  migrate_a1.py  ──→  SQLite (same)  ──→  FastAPI  ──→  React
@@ -21,7 +21,7 @@ Assignment 1 DuckDB  ──→  migrate_a1.py  ──→  SQLite (same)  ──�
 
 ## Data
 
-All data — both MQTT‑streamed NEM measurements and Assignment 1 historical records — is already stored in `data/electricity.db` (93 MB, included in the repo). The dashboard works immediately after `bash start.sh` with no API keys, no notebook execution, and no waiting for streaming data to accumulate.
+All data — both MQTT‑streamed NEM measurements and Assignment 1 historical records — is already stored in `data/electricity.db` (93 MB, included). The dashboard works immediately after `python start.py` with no API keys, no notebook execution, and no waiting for streaming data to accumulate.
 
 | Source | Location | Tables | Rows |
 |--------|----------|--------|------|
@@ -51,8 +51,6 @@ One command for **all platforms** (macOS, Linux, Windows). It installs Python an
 | React | http://localhost:5173 |
 | API docs | http://localhost:8000/docs |
 
-> **Prerequisites:** Python 3.10+, Node.js 18+, Mosquitto (`brew install mosquitto` on macOS or `apt install mosquitto` on Linux).
-
 ### 2. (Optional) Reproduce the data pipeline
 
 Open `COMP5339_Assignment2.ipynb` and **Run All** to execute Tasks 1–3 and 6 end-to-end: retrieve power/emissions/market data from the OpenElectricity API, integrate and clean, export to CSV, and publish MQTT messages.
@@ -61,8 +59,9 @@ Open `COMP5339_Assignment2.ipynb` and **Run All** to execute Tasks 1–3 and 6 e
 
 ```
 electricity-dashboard/
-├── start.sh                     # One-command launcher
-├── requirements.txt             # Python dependencies
+├── start.py                     # One-command launcher (cross-platform)
+├── start.sh                     # Alternative launcher (Bash)
+├── COMP5339_Assignment2.ipynb   # Notebook: Tasks 1, 2, 3, 6
 ├── .env.example                 # Environment template
 ├── mqtt_mapping.yaml            # MQTT field mapping config
 ├── data/
