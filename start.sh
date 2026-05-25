@@ -45,10 +45,14 @@ nohup npm run dev > /tmp/frontend.log 2>&1 &
 cd "$ROOT"
 sleep 2
 
-# ---- 4. Publisher ----
-echo "📤 启动 MQTT publisher（连续模式）..."
-pkill -f "run_publisher" 2>/dev/null || true
-nohup python3 -u run_publisher.py --rounds 0 > /tmp/publisher.log 2>&1 &
+# ---- 4. Publisher (optional) ----
+if [ -f run_publisher.py ]; then
+    echo "📤 启动 MQTT publisher（连续模式）..."
+    pkill -f "run_publisher" 2>/dev/null || true
+    nohup python3 -u run_publisher.py --rounds 0 > /tmp/publisher.log 2>&1 &
+else
+    echo "📤 MQTT publisher skipped (run_publisher.py not found — use notebook Task 6 instead)"
+fi
 
 sleep 1
 echo ""

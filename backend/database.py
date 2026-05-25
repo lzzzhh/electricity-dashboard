@@ -1,6 +1,6 @@
 """数据库模型 — SQLAlchemy + SQLite"""
 
-from sqlalchemy import create_engine, Column, String, Float, Integer, DateTime, Index, ForeignKey
+from sqlalchemy import create_engine, Column, String, Float, Integer, DateTime, Index
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime, timezone
 
@@ -30,7 +30,7 @@ class RawMQTTMessage(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     topic = Column(String)
-    payload = Column(String)  # JSON string
+    payload = Column(String)
     received_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -40,7 +40,7 @@ class Measurement(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     timestamp = Column(String, nullable=False)
-    facility_id = Column(String, ForeignKey("facilities.facility_id"), nullable=False)
+    facility_id = Column(String, nullable=False)
     power_mw = Column(Float)
     emissions_tco2e = Column(Float)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -68,25 +68,30 @@ class MarketData(Base):
 class IntegratedEnergyStateYear(Base):
     """Assignment 1 集成数据 — 州/年级别的能源+经济汇总"""
     __tablename__ = "integrated_energy_state_year"
+    __table_args__ = (
+        Index("idx_integrated_state_year", "state", "year", unique=True),
+        {"extend_existing": True},
+    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     state = Column(String(4), nullable=False)
     year = Column(Integer, nullable=False)
     total_generation_mwh = Column(Float)
     total_emissions_tco2e = Column(Float)
-    total_businesses = Column(Float)  # DuckDB BIGINT → SQLite REAL (NaN-safe)
+    total_businesses = Column(Float)
     small_businesses = Column(Float)
     renewable_project_count = Column(Float)
     total_renewable_capacity_mw = Column(Float)
-
-    __table_args__ = (
-        Index("idx_integrated_state_year", "state", "year", unique=True),
-    )
 
 
 class RenewableProject(Base):
     """Assignment 1 可再生能源项目（含地理编码）"""
     __tablename__ = "renewable_projects"
+    __table_args__ = (
+        Index("idx_renewable_state", "state"),
+        Index("idx_renewable_status", "status"),
+        {"extend_existing": True},
+    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     project_name = Column(String)
@@ -100,11 +105,6 @@ class RenewableProject(Base):
     longitude = Column(Float)
     display_name = Column(String)
     match_quality = Column(String)
-
-    __table_args__ = (
-        Index("idx_renewable_state", "state"),
-        Index("idx_renewable_status", "status"),
-    )
 
 
 def init_db():
