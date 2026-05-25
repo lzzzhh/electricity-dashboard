@@ -38,46 +38,24 @@ The DuckDB file (`data/assignment_1.duckdb` + `.wal`) is the raw Assignment 1 so
 - **Node.js 18+**
 - **Mosquitto** (MQTT broker) — `brew install mosquitto` (macOS) or `apt install mosquitto` (Linux)
 
-### 1. Install
-
-```bash
-pip install -r requirements.txt
-cd frontend && npm install && cd ..
-```
-
-> **Optional — clone from GitHub:**
-> ```bash
-> git clone https://github.com/lzzzhh/electricity-dashboard.git
-> cd electricity-dashboard
-> cp .env.example .env
-> pip install -r requirements.txt
-> cd frontend && npm install && cd ..
-> ```
-
-### 2. (Optional) Reproduce the data pipeline
-
-Open the notebook and **Run All**:
-
-```
-COMP5339_Assignment2.ipynb
-```
-
-This executes Tasks 1–3 and 6: retrieves power/emissions/market data from the OpenElectricity REST API, integrates and cleans the data, exports it to CSV, and publishes MQTT messages. The last cell (Task 6 continuous loop) is commented out — uncomment it to start looping.
-
-### 3. Start the project
+### 1. Start
 
 ```bash
 bash start.sh
 ```
 
-One command launches the MQTT broker, FastAPI backend, and React frontend. The dashboard uses pre‑loaded data in `electricity.db` — no external API calls are needed.
-
-### 4. Open
+This single command handles everything: installs Python and React dependencies, starts the MQTT broker, FastAPI backend, and React dashboard. After startup, open:
 
 | Dashboard | URL |
 |---|---|
 | React | http://localhost:5173 |
 | API docs | http://localhost:8000/docs |
+
+> **Prerequisites:** Python 3.10+, Node.js 18+, Mosquitto (`brew install mosquitto` on macOS or `apt install mosquitto` on Linux).
+
+### 2. (Optional) Reproduce the data pipeline
+
+Open `COMP5339_Assignment2.ipynb` and **Run All** to execute Tasks 1–3 and 6 end-to-end: retrieve power/emissions/market data from the OpenElectricity API, integrate and clean, export to CSV, and publish MQTT messages.
 
 ## Project Structure
 
