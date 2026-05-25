@@ -20,20 +20,16 @@ Assignment 1 DuckDB  ──→  migrate_a1.py  ──→  SQLite (same)  ──�
 | React Dashboard | Vite + Leaflet + Recharts + Tailwind | 5173 |
 | Streamlit Dashboard | Folium + Plotly | 8501 |
 
-## Data Sources
+## Data
 
-All data is persisted in `data/electricity.db` (SQLite). No external API calls are made at dashboard runtime.
+All data — both MQTT‑streamed NEM measurements and Assignment 1 historical records — is already stored in `data/electricity.db` (93 MB, included in the repo). The dashboard works immediately after `bash start.sh` with no API keys, no notebook execution, and no waiting for streaming data to accumulate.
 
 | Source | Location | Tables | Rows |
 |--------|----------|--------|------|
-| NEM real-time (MQTT) | *(ingested by mqtt_subscriber.py)* | `facilities`, `measurements`, `market_data`, `raw_mqtt_messages` | 1,601,275 measurements + 8,064 market records |
-| Assignment 1 history | `data/assignment_1.duckdb` | `integrated_energy_state_year`, `renewable_projects_geocoded_nominatim_fallback` | 32 state-year rows + 131 projects |
+| NEM real-time (MQTT) | `data/electricity.db` | `facilities`, `measurements`, `market_data` | 817,344 measurements + 8,064 market records |
+| Assignment 1 history | `data/assignment_1.duckdb` | *(migrated into `data/electricity.db`)* | 32 state‑year rows + 131 projects |
 
-To re-import A1 data from the DuckDB into SQLite, run:
-
-```bash
-python -m backend.migrate_a1
-```
+The DuckDB file (`data/assignment_1.duckdb` + `.wal`) is the raw Assignment 1 source. It has been migrated into SQLite via `backend/migrate_a1.py` — no further migration is needed unless the DuckDB is replaced with new data.
 
 ## Quick Start
 
