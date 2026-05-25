@@ -41,10 +41,10 @@ The DuckDB file (`data/assignment_1.duckdb` + `.wal`) is the raw Assignment 1 so
 ### 1. Start
 
 ```bash
-bash start.sh
+python start.py
 ```
 
-This single command handles everything: installs Python and React dependencies, starts the MQTT broker, FastAPI backend, and React dashboard. After startup, open:
+One command for **all platforms** (macOS, Linux, Windows). It installs Python and React dependencies, starts the MQTT broker, FastAPI backend, and React dashboard automatically. After startup, open:
 
 | Dashboard | URL |
 |---|---|
