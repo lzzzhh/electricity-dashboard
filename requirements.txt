@@ -2,22 +2,22 @@
 # COMP5339 Assignment 2
 
 # FastAPI
-fastapi==0.115.0
-uvicorn[standard]==0.30.0
-pydantic==2.9.0
-pydantic-settings==2.5.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.9.0
+pydantic-settings>=2.5.0
 
 # MQTT
-paho-mqtt==2.1.0
+paho-mqtt>=2.1.0
 
 # Database
-sqlalchemy==2.0.35
-duckdb==1.2.1
+sqlalchemy>=2.0.35
+duckdb>=1.2.1
 
 # Config
-pyyaml==6.0.2
-python-dotenv==1.0.1
+pyyaml>=6.0.2
+python-dotenv>=1.0.1
 
 # Data Processing
-pandas==2.2.0
-plotly==5.24.0
+pandas>=2.2.0
+plotly>=5.24.0
