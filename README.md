@@ -39,16 +39,21 @@ The DuckDB file (`data/assignment_1.duckdb` + `.wal`) is the raw Assignment 1 so
 - **Node.js 18+**
 - **Mosquitto** (MQTT broker) — `brew install mosquitto` (macOS) or `apt install mosquitto` (Linux)
 
-### 1. Clone & Install
+### 1. Install
 
 ```bash
-git clone https://github.com/lzzzhh/electricity-dashboard.git
-cd electricity-dashboard
-
-cp .env.example .env
 pip install -r requirements.txt
 cd frontend && npm install && cd ..
 ```
+
+> **Optional — clone from GitHub:**
+> ```bash
+> git clone https://github.com/lzzzhh/electricity-dashboard.git
+> cd electricity-dashboard
+> cp .env.example .env
+> pip install -r requirements.txt
+> cd frontend && npm install && cd ..
+> ```
 
 ### 2. (Optional) Reproduce the data pipeline
 
