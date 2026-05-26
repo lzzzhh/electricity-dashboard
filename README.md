@@ -15,9 +15,7 @@ Assignment 1 DuckDB  ──→  migrate_a1.py  ──→  SQLite (same)  ──�
 
 | Component | Tech | Port |
 |---|---|---|
-| MQTT Broker | Mosquitto | 1883 |
-| Backend API | FastAPI + SQLAlchemy + DuckDB | 8000 |
-| React (pre-built, no Node.js needed) Dashboard | Vite + Leaflet + Recharts + Tailwind | 5173 |
+| Backend API + Dashboard | FastAPI + SQLAlchemy + DuckDB | 8000 |
 
 ## Data
 
@@ -32,11 +30,9 @@ The DuckDB file (`data/assignment_1.duckdb` + `.wal`) is the raw Assignment 1 so
 
 ## Quick Start
 
-### Prerequisites
+### Only Requirement
 
-- **Python 3.10+**
-- **Node.js 18+**
-- **Mosquitto** (MQTT broker) — `brew install mosquitto` (macOS) or `apt install mosquitto` (Linux)
+- **Python 3.10+** — the React frontend is pre-built, no Node.js needed
 
 ### 1. Start
 
@@ -44,11 +40,11 @@ The DuckDB file (`data/assignment_1.duckdb` + `.wal`) is the raw Assignment 1 so
 python start.py
 ```
 
-One command for **all platforms** (macOS, Linux, Windows). It installs Python and React (pre-built, no Node.js needed) dependencies, starts the MQTT broker, FastAPI backend, and React (pre-built, no Node.js needed) dashboard automatically. After startup, open:
+One command for macOS, Linux, and Windows. Installs all dependencies, starts the backend, and serves the dashboard. Then open:
 
 | Dashboard | URL |
 |---|---|
-| React (pre-built, no Node.js needed) | http://localhost:8000 |
+| Frontend + API | http://localhost:8000 |
 | API docs | http://localhost:8000/docs |
 
 ### 2. (Optional) Reproduce the data pipeline
@@ -60,7 +56,6 @@ Open `COMP5339_Assignment2.ipynb` and **Run All** to execute Tasks 1–3 and 6 e
 ```
 electricity-dashboard/
 ├── start.py                     # One-command launcher (cross-platform)
-├── start.sh                     # Alternative launcher (Bash)
 ├── COMP5339_Assignment2.ipynb   # Notebook: Tasks 1, 2, 3, 6
 ├── .env.example                 # Environment template
 ├── mqtt_mapping.yaml            # MQTT field mapping config
