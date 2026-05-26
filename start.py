@@ -5,84 +5,92 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
-def run(cmd, cwd=None, shell=False):
-    print(f"  → {cmd}")
-    return subprocess.run(cmd, cwd=str(cwd or ROOT), shell=shell)
+
+def which(cmd):
+    """Find command in PATH, with Windows fallback (npm → npm.cmd)."""
+    path = shutil.which(cmd)
+    if not path and sys.platform == "win32" and not cmd.endswith(".cmd"):
+        path = shutil.which(cmd + ".cmd")
+    return path
+
 
 def main():
     print("=" * 50)
     print("  Electricity Dashboard — COMP5339 Assignment 2")
     print("=" * 50)
 
+    is_windows = sys.platform == "win32"
+    frontend = ROOT / "frontend"
+
     # 1. Ensure .env exists
     env_file = ROOT / ".env"
     if not env_file.exists():
-        print("\n[1/4] Creating .env ...")
-        shutil.copy(ROOT / ".env.example", env_file)
+        print("\n[1/5] Creating .env ...")
+        src = ROOT / ".env.example"
+        if src.exists():
+            shutil.copy(src, env_file)
+        else:
+            env_file.write_text("MQTT_HOST=localhost\nMQTT_PORT=1883\nDATABASE_URL=sqlite:///./data/electricity.db\n")
 
-    # 2. Platform detection
-    is_windows = sys.platform == "win32"
-
-    # 3. Python dependencies
+    # 2. Python dependencies
     print("\n[2/5] Installing Python dependencies ...")
     result = subprocess.run(
         [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"],
         capture_output=True, text=True
     )
-    if result.returncode != 0:
-        if "externally-managed" in result.stderr:
-            print("   Retrying (Homebrew Python, this may take a minute) ...")
-            # Show output so user can see download progress
-            subprocess.run(
-                [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--break-system-packages"],
-            )
-        else:
-            # Already installed or other error — continue
-            pass
+    if result.returncode != 0 and "externally-managed" in result.stderr:
+        print("   Retrying (Homebrew Python, this may take a minute) ...")
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "-r", "requirements.txt",
+             "--break-system-packages"],
+        )
 
-    # 4. React dependencies
+    # 3. React dependencies
     print("\n[3/5] Installing React dependencies ...")
-    frontend = ROOT / "frontend"
-    if is_windows:
-        run(["npm.cmd", "install", "--silent"], cwd=frontend, shell=True)
+    npm = which("npm")
+    if npm:
+        subprocess.run([npm, "install", "--silent"], cwd=str(frontend))
     else:
-        run(["npm", "install", "--silent"], cwd=frontend)
+        print("   npm not found. Install Node.js from https://nodejs.org")
+        print("   React frontend will be skipped — API still works at :8000")
 
-    # 5. MQTT Broker (skip on Windows if mosquitto not in PATH)
+    # 4. MQTT Broker
     print("\n[4/5] Starting MQTT broker ...")
-    mosquitto = shutil.which("mosquitto")
+    mosquitto = which("mosquitto")
     if mosquitto:
-        # Kill existing mosquitto
         if is_windows:
-            subprocess.run(["taskkill", "/F", "/IM", "mosquitto.exe"], capture_output=True)
+            subprocess.run(["taskkill", "/F", "/IM", "mosquitto.exe"],
+                           capture_output=True)
         else:
             subprocess.run(["pkill", "mosquitto"], capture_output=True)
         subprocess.Popen([mosquitto, "-p", "1883"])
         print("   mosquitto started on :1883")
     else:
-        print("   mosquitto not found — dashboard will work with pre-loaded data")
+        print("   mosquitto not found — dashboard uses pre-loaded data")
 
-    # 6. Backend
+    # 5. Backend
     print("\n[5/5] Starting services ...")
-    if is_windows:
-        subprocess.Popen([sys.executable, "-m", "uvicorn", "backend.main:app",
-                          "--host", "0.0.0.0", "--port", "8000"],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    else:
-        subprocess.Popen([sys.executable, "-m", "uvicorn", "backend.main:app",
-                          "--host", "0.0.0.0", "--port", "8000"],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.Popen(
+        [sys.executable, "-m", "uvicorn", "backend.main:app",
+         "--host", "0.0.0.0", "--port", "8000"],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
     time.sleep(2)
 
-    # 7. Frontend
-    frontend_cmd = ["npm.cmd" if is_windows else "npm", "run", "dev"]
-    subprocess.Popen(frontend_cmd, cwd=str(frontend),
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    time.sleep(2)
+    # 6. Frontend (if npm available)
+    if npm:
+        subprocess.Popen(
+            [npm, "run", "dev"], cwd=str(frontend),
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        time.sleep(2)
 
     print("\n" + "=" * 50)
     print("  Dashboard ready!")
-    print("  React frontend:  http://localhost:5173")
+    if npm:
+        print("  React frontend:  http://localhost:5173")
+    else:
+        print("  React frontend:  NOT STARTED (install Node.js first)")
     print("  Backend API:     http://localhost:8000")
     print("=" * 50)
 
