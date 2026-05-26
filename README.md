@@ -17,7 +17,7 @@ Assignment 1 DuckDB  ──→  migrate_a1.py  ──→  SQLite (same)  ──�
 |---|---|---|
 | MQTT Broker | Mosquitto | 1883 |
 | Backend API | FastAPI + SQLAlchemy + DuckDB | 8000 |
-| React Dashboard | Vite + Leaflet + Recharts + Tailwind | 5173 |
+| React (pre-built, no Node.js needed) Dashboard | Vite + Leaflet + Recharts + Tailwind | 5173 |
 
 ## Data
 
@@ -44,11 +44,11 @@ The DuckDB file (`data/assignment_1.duckdb` + `.wal`) is the raw Assignment 1 so
 python start.py
 ```
 
-One command for **all platforms** (macOS, Linux, Windows). It installs Python and React dependencies, starts the MQTT broker, FastAPI backend, and React dashboard automatically. After startup, open:
+One command for **all platforms** (macOS, Linux, Windows). It installs Python and React (pre-built, no Node.js needed) dependencies, starts the MQTT broker, FastAPI backend, and React (pre-built, no Node.js needed) dashboard automatically. After startup, open:
 
 | Dashboard | URL |
 |---|---|
-| React | http://localhost:5173 |
+| React (pre-built, no Node.js needed) | http://localhost:8000 |
 | API docs | http://localhost:8000/docs |
 
 ### 2. (Optional) Reproduce the data pipeline
@@ -76,7 +76,7 @@ electricity-dashboard/
 │   ├── adapter.py               # JSON field mapping adapter
 │   ├── migrate_a1.py            # DuckDB → SQLite migration
 │   └── config.py                # Settings (.env + YAML)
-└── frontend/                    # React + Vite + Leaflet + Recharts
+└── frontend/                    # React (pre-built, no Node.js needed) + Vite + Leaflet + Recharts
     └── src/
         ├── App.tsx              # Root layout
         ├── components/          # MapView, TopBar, BottomPanel, etc.
@@ -89,7 +89,7 @@ electricity-dashboard/
 1. **Task 1–2 (notebook):** Data is retrieved from the [OpenElectricity API](https://docs.openelectricity.org.au) and integrated into CSV files (`combined_power_emissions.csv`, `market_price_demand.csv`). Unit metadata is exported for the dashboard.
 2. **Task 3 (notebook):** Each row of the combined CSV is published to MQTT topic `openelectricity/nem/facility_power_emissions` in chronological order with a 0.1 s delay.
 3. **Task 4 (backend):** The MQTT subscriber normalises incoming JSON via `adapter.py`, stores measurements and market data in SQLite, and auto‑registers new facilities. Assignment 1 schema is implemented in `database.py` via `IntegratedEnergyStateYear` and `RenewableProject` tables, populated by `migrate_a1.py`.
-4. **Task 5 (frontend):** The React dashboard renders an interactive Leaflet map with carbon‑intensity‑coloured NEM markers, blue A1 renewable project markers, real‑time time‑series charts, market price/demand views, and a Historical (A1) tab with state‑level emissions charts and project summary cards.
+4. **Task 5 (frontend):** The React (pre-built, no Node.js needed) dashboard renders an interactive Leaflet map with carbon‑intensity‑coloured NEM markers, blue A1 renewable project markers, real‑time time‑series charts, market price/demand views, and a Historical (A1) tab with state‑level emissions charts and project summary cards.
 5. **Task 6 (notebook):** `run_continuous_publisher()` loops every 60 seconds, re‑loading the CSV and re‑publishing all records to simulate an unbounded data stream (commented out by default).
 
 ## API Endpoints
