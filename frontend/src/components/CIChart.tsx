@@ -27,7 +27,7 @@ export default function CIChart({ data, color, name }: Props) {
           <YAxis tick={{ fontSize: 9, fill: "#aaa" }} axisLine={false} tickLine={false} width={30} />
           <Tooltip
             contentStyle={{ fontSize: 11, borderRadius: 4, border: "1px solid #e4e4ea" }}
-            formatter={(v: number) => [`${v.toFixed(0)} gCO₂/kWh`]}
+            formatter={(v) => [`${Number(v).toFixed(0)} gCO₂/kWh`]}
           />
           <Line type="monotone" dataKey="ci" stroke={color} strokeWidth={1.5} dot={false} />
         </LineChart>

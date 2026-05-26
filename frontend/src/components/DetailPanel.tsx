@@ -62,7 +62,7 @@ export default function DetailPanel({ facility, reading, timeseries, summary }: 
           <>
             <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Electricity mix (NEM-wide)</div>
             {summary.map(s => {
-              const fn = s.fuel || s.region || "";
+              const fn = s.group || "";
               const pct = (s.value / total) * 100;
               const c = FUEL_COLORS[fn] || "#666";
               return (

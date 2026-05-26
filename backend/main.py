@@ -3,6 +3,8 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 from .config import settings
 from .database import init_db, SessionLocal, Facility
@@ -73,7 +75,7 @@ app.add_middleware(
 # 注册路由
 app.include_router(router)
 
-
-@app.get("/")
-def root():
-    return {"app": "Electricity Dashboard Backend", "status": "running"}
+# 托管预编译的 React 前端（无需 Node.js）
+FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+if FRONTEND_DIST.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend")

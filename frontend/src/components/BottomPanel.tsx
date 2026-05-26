@@ -106,7 +106,7 @@ export default function BottomPanel({ latest, facilities, regionSummary, fuelSum
               <CartesianGrid strokeDasharray="3 3" stroke="#e8e5e0" />
               <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#888" }} />
               <YAxis tick={{ fontSize: 10, fill: "#888" }} unit={isPower ? " MW" : " t"} />
-              <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: number) => [isPower ? `${v.toFixed(1)} MW` : `${v.toFixed(1)} tCO₂e`]} />
+              <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [isPower ? `${Number(v).toFixed(1)} MW` : `${Number(v).toFixed(1)} tCO₂e`]} />
               <Bar dataKey="value" name={isPower ? "Power (MW)" : "Emissions (tCO₂e)"} radius={[3, 3, 0, 0]}>
                 {regionSummary.filter(s => s.group).map((s, i) => (
                   <Cell key={i} fill={REGION_COLORS[s.group] || "#e65100"} />
@@ -121,7 +121,7 @@ export default function BottomPanel({ latest, facilities, regionSummary, fuelSum
               <CartesianGrid strokeDasharray="3 3" stroke="#e8e5e0" />
               <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#888" }} />
               <YAxis tick={{ fontSize: 10, fill: "#888" }} unit={isPower ? " MW" : " t"} />
-              <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: number) => [isPower ? `${v.toFixed(1)} MW` : `${v.toFixed(1)} tCO₂e`]} />
+              <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => [isPower ? `${Number(v).toFixed(1)} MW` : `${Number(v).toFixed(1)} tCO₂e`]} />
               <Bar dataKey="value" name={isPower ? "Power (MW)" : "Emissions (tCO₂e)"} radius={[3, 3, 0, 0]}>
                 {fuelSummary.filter(s => s.group).map((s, i) => (
                   <Cell key={i} fill={FUEL_COLORS[s.group] || "#666"} />
@@ -239,7 +239,7 @@ export default function BottomPanel({ latest, facilities, regionSummary, fuelSum
                         <CartesianGrid strokeDasharray="3 3" stroke="#e8e5e0" />
                         <XAxis dataKey="state" tick={{ fontSize: 9, fill: "#888" }} />
                         <YAxis tick={{ fontSize: 9, fill: "#888" }} />
-                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: number) => `${(v / 1e6).toFixed(1)}M t`} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => `${(Number(v) / 1e6).toFixed(1)}M t`} />
                         <Bar dataKey="value" radius={[2, 2, 0, 0]}>
                           {(() => {
                             const arr: { state: string; value: number }[] = [];
@@ -274,7 +274,7 @@ export default function BottomPanel({ latest, facilities, regionSummary, fuelSum
                         <CartesianGrid strokeDasharray="3 3" stroke="#e8e5e0" />
                         <XAxis dataKey="state" tick={{ fontSize: 9, fill: "#888" }} />
                         <YAxis tick={{ fontSize: 9, fill: "#888" }} />
-                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: number) => v.toFixed(0)} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => Number(v).toFixed(0)} />
                         <Bar dataKey="intensity" radius={[2, 2, 0, 0]}>
                           {(() => {
                             const map = new Map<string, { gen: number; em: number }>();

@@ -1,0 +1,14 @@
+facility_code,facility_name,network_region,unit_code,fueltech_id,status_id,latitude,longitude
+ADP,Adelaide Desalination,SA1,ADPBA1,battery,operating,-35.1,138.48
+ADP,Adelaide Desalination,SA1,ADPBA1G,battery,operating,-35.1,138.48
+ADP,Adelaide Desalination,SA1,ADPBA1L,battery,operating,-35.1,138.48
+ADP,Adelaide Desalination,SA1,ADPPV1,battery,operating,-34.78,138.55
+ANGASTON,Angaston,SA1,ANGAST1,distillate,operating,-34.51,139.05
+ARWF,Ararat,VIC1,ARWF1,wind,operating,-37.28,142.93
+BARCALDN,Barcaldine,QLD1,BARCALDN,gas_ccgt,operating,-23.55,145.29
+DEIBDL,Bairnsdale,VIC1,BDL01,gas_ocgt,operating,-37.82,147.63
+DEIBDL,Bairnsdale,VIC1,BDL02,gas_ocgt,operating,-37.82,147.63
+BAYSW,Bayswater,NSW1,BW01,coal_black,operating,-32.4,150.88
+BAYSW,Bayswater,NSW1,BW02,coal_black,operating,-32.4,150.88
+BAYSW,Bayswater,NSW1,BW03,coal_black,operating,-32.4,150.88
+BAYSW,Bayswater,NSW1,BW04,coal_black,operating,-32.4,150.88
